@@ -55,7 +55,7 @@ class GamedetailsFragment : Fragment() {
                     val options = RequestOptions().placeholder(CircularProgressDrawable(context).apply {
                         start()
                     }).error(R.mipmap.ic_launcher_round)
-                    Glide.with(context).setDefaultRequestOptions(options).load(response.body()?.gamePicture).centerCrop().into(sada)
+                    Glide.with(context).setDefaultRequestOptions(options).load(response.body()?.gamePicture).centerCrop().into(detailPageImageView)
                 }
             }
 

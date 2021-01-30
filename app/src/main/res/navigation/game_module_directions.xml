@@ -12,7 +12,11 @@
         tools:layout="@layout/fragment_gamelist" >
         <action
             android:id="@+id/action_gamelistFragment_to_gamedetailsFragment"
-            app:destination="@id/gamedetailsFragment" />
+            app:destination="@id/gamedetailsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/gamedetailsFragment"
