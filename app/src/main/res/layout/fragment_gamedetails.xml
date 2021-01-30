@@ -18,7 +18,7 @@
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_baseline_thumb_up_48"
+        android:src="@drawable/ic_twotone_thumb_up_48"
         android:layout_alignBottom="@+id/sada"
         android:backgroundTint="@android:color/transparent"
         android:layout_alignParentEnd="true"/>

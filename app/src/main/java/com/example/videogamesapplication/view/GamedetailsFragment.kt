@@ -2,6 +2,7 @@ package com.example.videogamesapplication.view
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Html
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -48,7 +49,9 @@ class GamedetailsFragment : Fragment() {
                     details1.text = response.body()?.name
                     details2.text = response.body()?.relaseDate
                     details3.text = response.body()?.metascore.toString()
-                    details4.text = response.body()?.description
+
+                  var a = Html.fromHtml(response.body()?.description,Html.FROM_HTML_MODE_LEGACY)
+                    details4.text = a
                     val options = RequestOptions().placeholder(CircularProgressDrawable(context).apply {
                         start()
                     }).error(R.mipmap.ic_launcher_round)
