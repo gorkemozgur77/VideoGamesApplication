@@ -1,35 +1,37 @@
 package com.example.videogamesapplication.view
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Html
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.example.videogamesapplication.R
-import com.example.videogamesapplication.model.game
-import com.example.videogamesapplication.service.Client
+import com.example.videogamesapplication.firebase.FirebaseService
+import com.example.videogamesapplication.viewmodel.GamedetailsViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.ktx.Firebase
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_gamedetails.*
-import kotlinx.android.synthetic.main.game_list_recycler_row.view.*
-import retrofit2.Call
-import retrofit2.Response
 
 
 class GamedetailsFragment : Fragment() {
+    private lateinit var viewModel : GamedetailsViewModel
+    private var firebaseService = FirebaseService()
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onStart() {
+        super.onStart()
+        firebaseService.logEvent(FirebaseService.EventType.DETAIL_PAGE)
 
     }
-
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_gamedetails, container, false)
@@ -37,32 +39,68 @@ class GamedetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).bottomNav.visibility = View.GONE
+        var gameid = 0
+
+        viewModel = ViewModelProviders.of(this).get(GamedetailsViewModel::class.java)
+
         arguments?.let {
-            context?.let { it1 -> getDetails(GamedetailsFragmentArgs.fromBundle(it).gameID, it1) }
+           gameid = GamedetailsFragmentArgs.fromBundle(it).gameID
+        }
+        viewModel.getDetails(gameid)
+        viewModel.isFavorited(gameid)
+        observeLiveData()
+
+        likeCheckbox.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                viewModel.addFav(gameid)
+                firebaseService.logButton(FirebaseService.ButtonType.ADDING_FAVOURITE, likeCheckbox.id)
+
+            }
+            else {
+            viewModel.deleteFav(gameid)
+            firebaseService.logButton(FirebaseService.ButtonType.REMOVE_FAVOURITE, likeCheckbox.id)
+
+
+            }
         }
     }
 
-    fun getDetails(id:Int, context : Context){
-        Client().getApiService().getGameDetails(id).enqueue(object : retrofit2.Callback<game>{
-            override fun onResponse(call: Call<game>, response: Response<game>) {
-                if(response.isSuccessful){
-                    details1.text = response.body()?.name
-                    details2.text = response.body()?.relaseDate
-                    details3.text = response.body()?.metascore.toString()
+    override fun onPause() {
+        super.onPause()
+        (activity as MainActivity).bottomNav.visibility = View.VISIBLE
 
-                  var a = Html.fromHtml(response.body()?.description,Html.FROM_HTML_MODE_LEGACY)
-                    details4.text = a
-                    val options = RequestOptions().placeholder(CircularProgressDrawable(context).apply {
-                        start()
-                    }).error(R.mipmap.ic_launcher_round)
-                    Glide.with(context).setDefaultRequestOptions(options).load(response.body()?.gamePicture).centerCrop().into(detailPageImageView)
-                }
-            }
-
-            override fun onFailure(call: Call<game>, t: Throwable) {
-                TODO("Not yet implemented")
-            }
-        })
     }
 
+    @SuppressLint("SetTextI18n")
+    private fun observeLiveData()
+    {
+        viewModel.detailedGame.observe(viewLifecycleOwner)
+        {
+            details1.text = it.gamename
+            details2.text = it.gamerelaseDate
+            details3.text = "Metacritic Score: "+it.metacritic.toString()
+            details4.text = Html.fromHtml(it.description,Html.FROM_HTML_MODE_LEGACY)
+            context?.let { it1 -> Glide.with(it1).load(it.gamePicture).centerCrop().into(detailPageImageView) }
+        }
+        viewModel.progressBarVisibility.observe(viewLifecycleOwner){
+            if (it)
+            {
+                detailPageLayout.visibility = View.GONE
+                detailPageProgressBar.visibility = View.VISIBLE
+            }
+            else
+            {
+                detailPageLayout.visibility = View.VISIBLE
+                detailPageProgressBar.visibility = View.GONE
+            }
+        }
+        viewModel.isFavorited.observe(viewLifecycleOwner){
+            if (it==1){
+                likeCheckbox.isChecked = true
+            }
+            
+
+        }
+    }
 }

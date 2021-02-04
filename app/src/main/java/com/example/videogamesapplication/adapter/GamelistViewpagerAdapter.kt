@@ -11,12 +11,11 @@ import androidx.viewpager.widget.PagerAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.videogamesapplication.R
-import com.example.videogamesapplication.model.game
+import com.example.videogamesapplication.model.Games
 import com.example.videogamesapplication.view.GamelistFragmentDirections
-import kotlinx.android.synthetic.main.game_list_recycler_row.view.*
 
 class GamelistViewpagerAdapter( var contx: Context) : PagerAdapter() {
-    var gamelist : List<game> = listOf()
+    var gamelist : List<Games> = listOf()
     override fun getCount(): Int {
         return gamelist.size
     }
@@ -36,7 +35,7 @@ class GamelistViewpagerAdapter( var contx: Context) : PagerAdapter() {
         container.addView(view)
 
         img.setOnClickListener {
-            val action = GamelistFragmentDirections.actionGamelistFragmentToGamedetailsFragment(gamelist[position].id)
+            val action = GamelistFragmentDirections.actionGamelistFragmentToGamedetailsFragment(gamelist[position].gameid)
             Navigation.findNavController(it).navigate(action)
         }
         return view
@@ -46,7 +45,7 @@ class GamelistViewpagerAdapter( var contx: Context) : PagerAdapter() {
         container.removeView(`object` as View)
     }
 
-    fun savefirstThreeGame(gamelist : List<game>){
+    fun savefirstThreeGame(gamelist : List<Games>){
         this.gamelist = gamelist
         notifyDataSetChanged()
     }
