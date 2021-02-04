@@ -6,26 +6,36 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
 import com.example.videogamesapplication.R
-import com.example.videogamesapplication.model.responseModel.gamelistResponse
 import com.example.videogamesapplication.adapter.GamelistRecyclerAdapter
 import com.example.videogamesapplication.adapter.GamelistViewpagerAdapter
-import com.example.videogamesapplication.service.Client
+import com.example.videogamesapplication.firebase.FirebaseService
+import com.example.videogamesapplication.viewmodel.GamelistViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.fragment_gamelist.*
-import retrofit2.Call
-import retrofit2.Response
 
 
-class GamelistFragment : Fragment() {
+class GamelistFragment : Fragment(), SearchView.OnQueryTextListener {
 
     lateinit var gamelistRecyclerAdapter: GamelistRecyclerAdapter
     lateinit var gamelistViewpagerAdapter: GamelistViewpagerAdapter
+    private lateinit var viewModel : GamelistViewModel
+    private var firebaseService = FirebaseService()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
 
+    override fun onStart() {
+        super.onStart()
+        firebaseService.logEvent(FirebaseService.EventType.HOME_PAGE)
     }
 
     override fun onCreateView(
@@ -40,11 +50,27 @@ class GamelistFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         context?.let { setupRecyclerView(it) }
-        getGamelist()
-
+        viewModel = ViewModelProviders.of(this).get(GamelistViewModel::class.java)
+        viewModel.getData()
+        tablayId.setupWithViewPager(viewpagerid)
+        observeLiveData()
+        searchViewId.setOnQueryTextListener(this)
     }
 
-    fun setupRecyclerView(context : Context){
+     private fun observeLiveData()
+     {
+         gamelist_progressbar_id.visibility = View.VISIBLE
+         gamelist_fragment_linearlayout_id.visibility = View.GONE
+        viewModel.games.observe(viewLifecycleOwner,
+                {
+                    gamelistRecyclerAdapter.saveGamelist(it - it.take(3))
+                    gamelistViewpagerAdapter.savefirstThreeGame(it.take(3))
+                    gamelist_progressbar_id.visibility = View.GONE
+                    gamelist_fragment_linearlayout_id.visibility = View.VISIBLE
+        })
+    }
+    fun setupRecyclerView(context : Context)
+    {
         gamelistRecyclerAdapter = GamelistRecyclerAdapter()
         gamelistViewpagerAdapter = GamelistViewpagerAdapter(context)
         gamelist_recyclerview_id.layoutManager = LinearLayoutManager(context)
@@ -52,30 +78,52 @@ class GamelistFragment : Fragment() {
         viewpagerid.adapter = gamelistViewpagerAdapter
     }
 
-    fun getGamelist(){
-        gamelist_progressbar_id.visibility = View.VISIBLE
-        gamelist_fragment_linearlayout_id.visibility = View.GONE
-        Client().getApiService().getListofGames().enqueue(object : retrofit2.Callback<gamelistResponse>{
-            override fun onResponse(call: Call<gamelistResponse>, response: Response<gamelistResponse>
-            ) {
-                println(response.body()?.results)
-                if(response.isSuccessful){
-                    response.body()?.let {
-                        gamelistRecyclerAdapter.saveGamelist(it.results-it.results.take(3))
-                        gamelistViewpagerAdapter.savefirstThreeGame(it.results.take(3))
-                    }
-                    gamelist_progressbar_id.visibility = View.GONE
-                    gamelist_fragment_linearlayout_id.visibility = View.VISIBLE
-                }
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        if (query!=null)
+        {
+            if (query.length > 2 || query.isEmpty()) {
+                searchDatabase(query)
             }
-
-            override fun onFailure(call: Call<gamelistResponse>, t: Throwable) {
-                println(t.cause)
-                println(t.message)
-                println(t.stackTrace)
-            }
-        })
+        }
+        return true
     }
 
+    override fun onQueryTextChange(query: String?): Boolean {
+
+        if (query != null)
+        {
+            if (query.length > 2 || query.isEmpty())
+            {
+                searchDatabase(query)
+            }
+        }
+        return true
+    }
+
+    private fun searchDatabase(query: String){
+        val searchquery = "%$query%"
+
+        viewModel.searchData(searchquery)
+        viewModel.searchedGames.observe(viewLifecycleOwner,{
+            searchErrorTextView.visibility = View.GONE
+            if (query.isNotEmpty())
+            {
+                cardviewId.visibility = View.GONE
+                tablayId.visibility = View.GONE
+                gamelistRecyclerAdapter.saveGamelist(it)
+                if (it.isEmpty())
+                    searchErrorTextView.visibility = View.VISIBLE
+            }
+            else
+            {
+                cardviewId.visibility = View.VISIBLE
+                tablayId.visibility = View.VISIBLE
+                gamelistRecyclerAdapter.saveGamelist(it - it.take(3))
+            }
+
+
+        })
+
+    }
 
 }

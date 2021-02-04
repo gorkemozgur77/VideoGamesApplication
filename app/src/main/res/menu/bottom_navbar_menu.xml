@@ -4,12 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/homeItem"
+        android:id="@+id/gamelistFragment"
         android:title="Home"
         app:showAsAction="ifRoom"
         android:icon="@drawable/bottom_nav_home"/>
     <item
-        android:id="@+id/favItem"
+        android:id="@+id/favoritesFragment"
         android:title="Favorites"
         app:showAsAction="ifRoom"
         android:icon="@drawable/bottom_nav_fav"/>

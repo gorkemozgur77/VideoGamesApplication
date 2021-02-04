@@ -12,7 +12,14 @@
         tools:layout="@layout/fragment_gamelist" >
         <action
             android:id="@+id/action_gamelistFragment_to_gamedetailsFragment"
-            app:destination="@id/gamedetailsFragment" />
+            app:destination="@id/gamedetailsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_gamelistFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment" />
     </fragment>
     <fragment
         android:id="@+id/gamedetailsFragment"
@@ -21,6 +28,19 @@
         tools:layout="@layout/fragment_gamedetails" >
         <argument
             android:name="gameID"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.example.videogamesapplication.view.FavoritesFragment"
+        android:label="fragment_favorites"
+        tools:layout="@layout/fragment_favorites" >
+        <action
+            android:id="@+id/action_favoritesFragment_to_gamedetailsFragment"
+            app:destination="@id/gamedetailsFragment" />
+        <argument
+            android:name="gameId"
             app:argType="integer"
             android:defaultValue="0" />
     </fragment>

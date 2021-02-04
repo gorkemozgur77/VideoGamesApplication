@@ -1,9 +1,9 @@
-package com.example.videogamesapplication.model.responseModel
+package com.example.videogamesapplication.model.response
 
-import com.example.videogamesapplication.model.game
+import com.example.videogamesapplication.model.Games
 import com.google.gson.annotations.SerializedName
 
-data class gamelistResponse(
+data class GamelistResponse(
 
     @SerializedName("count")
     val count : Int,
@@ -15,6 +15,6 @@ data class gamelistResponse(
     val previousPageURL : String?,
 
     @SerializedName("results")
-    val results : List<game>
+    val results : List<Games>
 
 )

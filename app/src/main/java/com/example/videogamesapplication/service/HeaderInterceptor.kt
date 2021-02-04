@@ -1,6 +1,6 @@
 package com.example.videogamesapplication.service
 
-import com.example.videogamesapplication.constants.Constants
+import com.example.videogamesapplication.util.Constants
 import okhttp3.Interceptor
 import okhttp3.Response
 

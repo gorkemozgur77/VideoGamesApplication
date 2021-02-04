@@ -10,7 +10,8 @@
         android:supportsRtl="true"
 
         android:theme="@style/Theme.VideoGamesApplication">
-        <activity android:name=".view.MainActivity">
+        <activity android:name=".view.MainActivity"
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
